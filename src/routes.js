@@ -1,8 +1,8 @@
-const express = require("express");
-const routes = express.Router();
-const barCodeController = require("./app/controllers/barCodeController");
-const verifyBarCode = require("./app/middlewares/verifyBarCode");
+const express = require("express")
+const routes = express.Router()
+const lineCodeController = require("./app/controllers/lineCodeController")
+const verifyLineCode = require("./app/middlewares/verifyLineCode")
 
-routes.get("/barcode/:barcode", verifyBarCode, barCodeController.getDetails);
+routes.get("/lineCode/:lineCode", verifyLineCode, lineCodeController.getDetails)
 
-module.exports = routes;
+module.exports = routes
