@@ -1,14 +1,16 @@
+const lineCodeClass = require('../classes/lineCode')
+
 _isSizeValidated=(lineCode)=> lineCode.length===47 || lineCode.length===48
 _isOnlyNumbers=(lineCode)=> new RegExp(/^[0-9]{1,}$/).test(lineCode)
 _getTypeLineCode=(lineCode)=> {
   switch (lineCode.length) {
     case 47:
-      return "Boleto"
+      return "Título"
     case 48:
       return "Convênio"
   }
 };
-_getDv=(lineCode, beginOne=false)=>{
+_getVd=(lineCode, beginOne=false)=>{
   const multiplicationEven = (beginOne)?1:2
   const multiplicationOdd = (beginOne)?2:1
 
@@ -20,16 +22,16 @@ _getDv=(lineCode, beginOne=false)=>{
     })
  return Math.round((((Math.ceil(sumNumbers/10)*10)-sumNumbers%10)/10)%1*10)
 }
-_isDvValidated=(type, lineCode)=> {
-  const arraylineCode = [...lineCode]
+_isVdValidated=({type, originalLineCode})=> {
+  const arraylineCode = [...originalLineCode]
   switch (type) {
-    case "Boleto":
-      if(Number(arraylineCode[9])!==_getDv(arraylineCode.slice(0, 9))) return false
-      if(Number(arraylineCode[20])!==_getDv(arraylineCode.slice(10, 20), true)) return false
-      if(Number(arraylineCode[31])!==_getDv(arraylineCode.slice(21, 31), true)) return false
+    case "Título":
+      if(Number(arraylineCode[9])!==_getVd(arraylineCode.slice(0, 9))) return false
+      if(Number(arraylineCode[20])!==_getVd(arraylineCode.slice(10, 20), true)) return false
+      if(Number(arraylineCode[31])!==_getVd(arraylineCode.slice(21, 31), true)) return false
       return true
     case "Convênio":
-      if(Number(arraylineCode[3])!==_getDv([...arraylineCode.slice(0, 3),...arraylineCode.slice(4, 31)])) return false
+      if(Number(arraylineCode[3])!==_getVd([...arraylineCode.slice(0, 3),...arraylineCode.slice(4, 31)])) return false
       return true
   }
 };
@@ -43,12 +45,14 @@ module.exports = (req, res, next) => {
     return res.status(412).json({ message: 'Código com caracteres inválidos.' })
   }
 
-  req.type = _getTypeLineCode(lineCode)
+  const type = _getTypeLineCode(lineCode)
+  const lineCodeObj = new lineCodeClass(type,lineCode)
 
-  if(!_isDvValidated(req.type, lineCode)){
-    return res.status(400).json({ message: `${req.type} com dígito verificador inválido.` })
+  if(!_isVdValidated(lineCodeObj)){
+    return res.status(400).json({ message: `${type} com dígito verificador inválido.` })
   }
+  lineCodeObj.setValidatedTrue()
 
-  req.lineCodeValidated = true
+  req.lineCodeObj = lineCodeObj
   next()
 };

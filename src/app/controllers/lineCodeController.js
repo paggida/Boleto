@@ -1,16 +1,14 @@
-const lineCodeTools = require('../tools/lineCode')
+
 module.exports = {
   getDetails(req, res) {
-    const { type, lineCodeValidated } = req
-    const { lineCode } = req.params
-    const arrayLineCode = [...lineCode]
+    const { lineCodeObj } = req
 
     return res.json({
-      validated: lineCodeValidated,
-      type,
-      value:lineCodeTools.getValue(type,arrayLineCode),
-      dueDate:lineCodeTools.getDueDate(type,arrayLineCode),
-      codeBar: lineCodeTools.getCodeBar(type,arrayLineCode),
+      validated: lineCodeObj.validated,
+      type: lineCodeObj.type,
+      value:lineCodeObj.getValue(),
+      dueDate:lineCodeObj.getDueDate(),
+      codeBar:lineCodeObj.getCodeBar(),
     })
   }
 };
